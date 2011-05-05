@@ -52,7 +52,7 @@ function main(win) {
   }, true);
   $("tabContextMenu").insertBefore(menuitem, $("context_reloadAllTabs"));
 
-  unload(function() menuitem.parentNode.removeChild(menuitem));
+  unload(function() menuitem.parentNode.removeChild(menuitem), win);
 }
 
 var addon = {

@@ -5,7 +5,7 @@
     <creator>Erik Vold</creator>
     <id>sort-tabs@erikvold.com</id>
     <name>Sort Tabs</name>
-    <version>1.0</version>
+    <version>1.1pre</version>
     <bootstrap>true</bootstrap>
     <type>2</type>
     <homepageURL>http://github.com/erikvold/sort-tabs-ffext</homepageURL>

@@ -1,4 +1,5 @@
 .project
 .settings
 *.xpi
+.DS_Store
 

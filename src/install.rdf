@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<r:RDF xmlns="http://www.mozilla.org/2004/em-rdf#"
+       xmlns:r="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <r:Description about="urn:mozilla:install-manifest">
+    <creator>Erik Vold</creator>
+    <id>sort-tabs@erikvold.com</id>
+    <name>Sort Tabs</name>
+    <version>1.0</version>
+    <bootstrap>true</bootstrap>
+    <type>2</type>
+    <homepageURL>http://github.com/erikvold/sort-tabs-ffext</homepageURL>
+    <description>Adds a "Sort Tabs" context menu to tabs.</description>
+
+    <!-- Firefox -->
+    <targetApplication>
+      <r:Description>
+        <id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</id>
+        <minVersion>4.0b4</minVersion>
+        <maxVersion>6.*</maxVersion>
+      </r:Description>
+    </targetApplication>
+  </r:Description>
+</r:RDF>

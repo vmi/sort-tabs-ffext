@@ -23,6 +23,7 @@
  *
  * Contributor(s):
  *   Erik Vold <erikvvold@gmail.com> (Original Author)
+ *   Greg Parris <greg.parris@gmail.com>
  *
  * ***** END LICENSE BLOCK ***** */
 
@@ -41,18 +42,75 @@ function main(win) {
   function $(id) doc.getElementById(id);
   function xul(type) doc.createElementNS(NS_XUL, type);
 
-  var menuitem = xul("menuitem");
-  menuitem.setAttribute("label", "Sort Tabs");
-  menuitem.addEventListener("command", function() {
-      var tabs = [];
-      for (var i = gBrowser.tabs.length - 1; ~i; i--) tabs[i] = gBrowser.tabs[i];
-        tabs.sort(function(a, b) (
-            (a.label.toLowerCase() < b.label.toLowerCase()) ? -1 : 1))
-        .forEach(gBrowser.moveTabTo.bind(gBrowser));
-  }, true);
-  $("tabContextMenu").insertBefore(menuitem, $("context_reloadAllTabs"));
+  function sortTabs(aType) {
+    var tabs = [], sortFunc;
+    aType = aType || checkedVal || "alpha";
 
-  unload(function() menuitem.parentNode.removeChild(menuitem), win);
+    for (var i = gBrowser.tabs.length - 1; ~i; i--) tabs[i] = gBrowser.tabs[i];
+
+    switch (aType) {
+      case "alpha":
+        sortFunc = function(a, b) {
+          return (a.label.toLowerCase() < b.label.toLowerCase() ? -1 : 1);
+        };
+        break;
+      case "url":
+        sortFunc = function(a, b) {
+          var aURL = gBrowser.getBrowserForTab(a).currentURI.spec,
+              bURL = gBrowser.getBrowserForTab(b).currentURI.spec;
+          return (aURL.toLowerCase() < bURL.toLowerCase() ? -1 : 1);
+        };
+        break;
+      /*case "timeOpened":
+        sortFunc = function(a, b) {
+          return (a.label.toLowerCase() < b.label.toLowerCase() ? -1 : 1);
+        };
+        break;*/
+      default:
+        throw new Error("Invalid sort type: " + aType);
+    }
+
+    // Update the "checked" value
+    checkedVal = aType;
+
+    tabs.sort(sortFunc).forEach(gBrowser.moveTabTo.bind(gBrowser));
+    Services.console.logStringMessage("Sorted tabs by: " + aType);
+  };
+
+  // Expose sortTabs
+  gBrowser.sortTabs = sortTabs;
+
+  var sortTypes = [
+    {value: "alpha", label: "Sort alphabetically"},
+    //{value: "timeOpened", label: "Sort by time opened"},
+    {value: "url", label: "Sort by URL"}
+  ];
+
+  // TODO: keep track of the user-checked value... initial value = preference
+  var checkedVal = sortTypes[0].value;
+
+  var menu = xul("splitmenu");
+  menu.setAttribute("label", "Sort Tabs");
+  menu.setAttribute("oncommand", "gBrowser.sortTabs()");
+
+  var menuPopup = xul("menupopup");
+
+  for (var i=0; i < sortTypes.length; i++) {
+    let sortType = sortTypes[i];
+    let menuItem = xul("menuitem");
+    menuItem.setAttribute("label", sortType.label);
+    menuItem.setAttribute("name", "sortTabsItem");
+    menuItem.setAttribute("type", "radio");
+    menuItem.setAttribute("value", sortType.value);
+    menuItem.addEventListener("command", function() sortTabs(sortType.value), true);
+    if (checkedVal == sortType.value) menuItem.setAttribute("checked", "true");
+    menuPopup.appendChild(menuItem);
+  }
+
+  menu.appendChild(menuPopup);
+  $("tabContextMenu").insertBefore(menu, $("context_reloadAllTabs"));
+
+  unload(function() menu.parentNode.removeChild(menu), win);
 }
 
 var addon = {

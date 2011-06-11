@@ -48,7 +48,11 @@ function main(win) {
   }
 
   win.addEventListener("TabOpen", markTime, false);
-  unload(function() win.removeEventListener("TabOpen", markTime, false));
+  unload(function() {
+    win.removeEventListener("TabOpen", markTime, false);
+    for (let [, tab] in Iterator(gBrowser.tabs))
+      tab.removeAttribute("created");
+  });
 
   function sortTabs(aType) {
     var tabs = [], sortFunc;

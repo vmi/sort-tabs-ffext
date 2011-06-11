@@ -51,21 +51,17 @@ function main(win) {
     switch (aType) {
       case "alpha":
         sortFunc = function(a, b) {
-          return (a.label.toLowerCase() < b.label.toLowerCase() ? -1 : 1);
+          return a.label.toLocaleLowerCase()
+              .localeCompare(b.label.toLocaleLowerCase());
         };
         break;
       case "url":
         sortFunc = function(a, b) {
           var aURL = gBrowser.getBrowserForTab(a).currentURI.spec,
               bURL = gBrowser.getBrowserForTab(b).currentURI.spec;
-          return (aURL.toLowerCase() < bURL.toLowerCase() ? -1 : 1);
+          return aURL.toLocaleLowerCase().localeCompare(bURL.toLocaleLowerCase());
         };
         break;
-      /*case "timeOpened":
-        sortFunc = function(a, b) {
-          return (a.label.toLowerCase() < b.label.toLowerCase() ? -1 : 1);
-        };
-        break;*/
       default:
         throw new Error("Invalid sort type: " + aType);
     }
@@ -82,7 +78,6 @@ function main(win) {
 
   var sortTypes = [
     {value: "alpha", label: "Sort alphabetically"},
-    //{value: "timeOpened", label: "Sort by time opened"},
     {value: "url", label: "Sort by URL"}
   ];
 

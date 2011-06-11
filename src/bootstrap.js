@@ -78,7 +78,7 @@ function main(win) {
         };
         break;
       default:
-        throw new Error("Invalid sort type: " + aType);
+        throw new Error(_("error.invalidSortType") + aType);
     }
 
     // Update the "checked" value
@@ -92,16 +92,16 @@ function main(win) {
   gBrowser.sortTabs = sortTabs;
 
   var sortTypes = [
-    {value: "alpha", label: "Sort alphabetically"},
-    {value: "timeOpened", label: "Sort by time opened"},
-    {value: "url", label: "Sort by URL"}
+    {value: "alpha", label: _("sort.alphabetically")},
+    {value: "timeOpened", label: _("sort.timeOpened")},
+    {value: "url", label: _("sort.url")}
   ];
 
   // TODO: keep track of the user-checked value... initial value = preference
   var checkedVal = sortTypes[0].value;
 
   var menu = xul("splitmenu");
-  menu.setAttribute("label", "Sort Tabs");
+  menu.setAttribute("label", _("sortTabs"));
   menu.setAttribute("oncommand", "gBrowser.sortTabs()");
 
   var menuPopup = xul("menupopup");
@@ -141,6 +141,10 @@ function install() {}
 function uninstall() {}
 function startup(data) {
   include(addon.getResourceURI("includes/utils.js").spec);
+
+  include(addon.getResourceURI("includes/l10n.js").spec);
+  l10n(addon, "st.properties");
+  unload(l10n.unload);
 
   watchWindows(main, "navigator:browser");
 };

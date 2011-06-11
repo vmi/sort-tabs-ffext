@@ -42,6 +42,14 @@ function main(win) {
   function $(id) doc.getElementById(id);
   function xul(type) doc.createElementNS(NS_XUL, type);
 
+  function markTime(event) {
+    let tab = event.target;
+    tab.setAttribute("created", Date.now());
+  }
+
+  win.addEventListener("TabOpen", markTime, false);
+  unload(function() win.removeEventListener("TabOpen", markTime, false));
+
   function sortTabs(aType) {
     var tabs = [], sortFunc;
     aType = aType || checkedVal || "alpha";
@@ -54,6 +62,13 @@ function main(win) {
           return a.label.toLocaleLowerCase()
               .localeCompare(b.label.toLocaleLowerCase());
         };
+        break;
+      case "timeOpened":
+        sortFunc = function(a, b) {
+          var aTime = a.getAttribute("created"),
+              bTime = b.getAttribute("created");
+          return (aTime < bTime ? -1 : aTime > bTime ? 1 : 0);
+        }
         break;
       case "url":
         sortFunc = function(a, b) {
@@ -78,6 +93,7 @@ function main(win) {
 
   var sortTypes = [
     {value: "alpha", label: "Sort alphabetically"},
+    {value: "timeOpened", label: "Sort by time opened"},
     {value: "url", label: "Sort by URL"}
   ];
 

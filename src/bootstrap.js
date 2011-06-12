@@ -150,7 +150,7 @@ function main(win) {
   menu.appendChild(menuPopup);
   $("tabContextMenu").insertBefore(menu, $("context_reloadAllTabs"));
 
-  var prefChgHanderIndex = prefChgHandlers.push(function(aData) {
+  var prefChgHandlerIndex = prefChgHandlers.push(function(aData) {
     switch (aData) {
       case "sortBy":
         checkedVal = getPref(aData);
@@ -162,7 +162,7 @@ function main(win) {
   }) - 1;
 
   unload(function() {
-    prefChgHandlers[prefChgHanderIndex] = null;
+    prefChgHandlers[prefChgHandlerIndex] = null;
     menu.parentNode.removeChild(menu);
   }, win);
 }

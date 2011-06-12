@@ -32,6 +32,31 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 const NS_XUL = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 
+const PREF_BRANCH = "extensions.sort-tabs.";
+const PREFS = {
+  sortBy: "alpha"
+};
+
+var prefChgHandlers = [];
+let PREF_OBSERVER = {
+  observe: function(aSubject, aTopic, aData) {
+    if ("nsPref:changed" != aTopic || !(aData in PREFS)) return;
+    prefChgHandlers.forEach(function(func) func && func(aData));
+  }
+}
+
+function setPref(aKey, aVal) {
+  switch (typeof(aVal)) {
+    case "string":
+      var ss = Cc["@mozilla.org/supports-string;1"]
+          .createInstance(Ci.nsISupportsString);
+      ss.data = aVal;
+      Services.prefs.getBranch(PREF_BRANCH)
+          .setComplexValue(aKey, Ci.nsISupportsString, ss);
+      break;
+  }
+}
+
 (function(global) global.include = function include(src) (
     Services.scriptloader.loadSubScript(src, global)))(this);
 
@@ -86,7 +111,8 @@ function main(win) {
     }
 
     // Update the "checked" value
-    checkedVal = aType;
+    if (checkedVal != aType)
+      setPref("sortBy", aType);
 
     tabs.sort(sortFunc).forEach(gBrowser.moveTabTo.bind(gBrowser));
     Services.console.logStringMessage("Sorted tabs by: " + aType);
@@ -101,8 +127,7 @@ function main(win) {
     {value: "url", label: _("sort.url")}
   ];
 
-  // TODO: keep track of the user-checked value... initial value = preference
-  var checkedVal = sortTypes[0].value;
+  var checkedVal = getPref("sortBy");
 
   var menu = xul("splitmenu");
   menu.setAttribute("label", _("sortTabs"));
@@ -125,7 +150,21 @@ function main(win) {
   menu.appendChild(menuPopup);
   $("tabContextMenu").insertBefore(menu, $("context_reloadAllTabs"));
 
-  unload(function() menu.parentNode.removeChild(menu), win);
+  var prefChgHanderIndex = prefChgHandlers.push(function(aData) {
+    switch (aData) {
+      case "sortBy":
+        checkedVal = getPref(aData);
+        let children = menuPopup.children;
+        for (var i=0; i < children.length; i++)
+          children[i].setAttribute("checked", checkedVal == children[i].value);
+        break;
+    }
+  }) - 1;
+
+  unload(function() {
+    prefChgHandlers[prefChgHanderIndex] = null;
+    menu.parentNode.removeChild(menu);
+  }, win);
 }
 
 var addon = {
@@ -145,6 +184,13 @@ function install() {}
 function uninstall() {}
 function startup(data) {
   include(addon.getResourceURI("includes/utils.js").spec);
+
+  include(addon.getResourceURI("includes/prefs.js").spec);
+  var prefs = Services.prefs.getBranch(PREF_BRANCH);
+  prefs = prefs.QueryInterface(Components.interfaces.nsIPrefBranch2);
+  prefs.addObserver("", PREF_OBSERVER, false);
+  setDefaultPrefs();
+  unload(function() prefs.removeObserver("", PREF_OBSERVER));
 
   include(addon.getResourceURI("includes/l10n.js").spec);
   l10n(addon, "st.properties");

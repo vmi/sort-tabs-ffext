@@ -42,12 +42,12 @@ function main(win) {
   function xul(type) doc.createElementNS(NS_XUL, type);
 
   var menuitem = xul("menuitem");
-  menuitem.setAttribute("label", "Sort Tabs");
+  menuitem.setAttribute("label", "Sort Tabs by URI");
   menuitem.addEventListener("command", function() {
       var tabs = [];
       for (var i = gBrowser.tabs.length - 1; ~i; i--) tabs[i] = gBrowser.tabs[i];
         tabs.sort(function(a, b) (
-            (a.label.toLowerCase() < b.label.toLowerCase()) ? -1 : 1))
+            (a.linkedBrowser.currentURI.spec < b.linkedBrowser.currentURI.spec) ? -1 : 1))
         .forEach(gBrowser.moveTabTo.bind(gBrowser));
   }, true);
   $("tabContextMenu").insertBefore(menuitem, $("context_reloadAllTabs"));
